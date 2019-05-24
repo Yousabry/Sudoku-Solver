@@ -1,5 +1,5 @@
 # Sudoku-Solver
-Java program that can solve basic sudokus (ones that dont require guessing).
+Java program that can solve basic sudokus (ones that dont require trial and error).
 
 Tile.java:
 Every tile has an id, value, row, column, poss, tempposs and certainty.
