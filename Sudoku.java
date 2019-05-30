@@ -1,6 +1,7 @@
 public class Sudoku{
     int id;
     String name;
+    String oldComp;
     tile[] alltiles = new tile[81];
     line[] alllines = new line[18];
     square[] allsquares = new square[9];
@@ -96,7 +97,7 @@ public class Sudoku{
 
             for (int c = 0; c < 9; c++){
                 if (tempchecker[c] > 1){
-                    System.out.println("Problem in line (id: "+l.getId()+"): "+l.toString());
+                    //System.out.println("Problem in line (id: "+l.getId()+"): "+l.toString());
                     return false;
                 }
                 tempchecker[c] = 0;
@@ -113,7 +114,7 @@ public class Sudoku{
 
             for (int c = 0; c < 9; c++){
                 if (tempchecker[c] > 1){
-                    System.out.println("Problem in square (id: "+s.getId()+"): "+s.toString());
+                    //System.out.println("Problem in square (id: "+s.getId()+"): "+s.toString());
                     return false;
                 }
                 tempchecker[c] = 0;
@@ -123,7 +124,7 @@ public class Sudoku{
         //Check if each individual tile has min 1 poss solution
         for (tile t: alltiles){
             if (t.getNumOfPoss() == 0 && t.getVal() == 0){
-                System.out.println("There are no possible answers for tile: "+ t.getId());
+                //System.out.println("There are no possible answers for tile: "+ t.getId());
                 return false;
             }
         }
@@ -135,7 +136,6 @@ public class Sudoku{
                 return false;
             }
         }
-        System.out.println("SOLVED!!");
         return true;
     }
     public tile getTile(int id){
@@ -158,25 +158,25 @@ public class Sudoku{
             //Check rows
             for (tile adjtile: alllines[row].getTiles()){
                 if (adjtile.getVal() != 0){
-                    alltiles[i].setPoss(adjtile.getVal(), false);
+                    alltiles[i].setPoss(adjtile.getVal() - 1, false);
                 }
             }
             //Check columns
             for (tile adjtile: alllines[col + 9].getTiles()){
                 if (adjtile.getVal() != 0){
-                    alltiles[i].setPoss(adjtile.getVal(), false);
+                    alltiles[i].setPoss(adjtile.getVal() - 1, false);
                 }
             }
             //Check Squares
             //(*3 then /3 using floor division)
             for (tile adjtile: allsquares[square].getTiles()){
                 if (adjtile.getVal() != 0){
-                    alltiles[i].setPoss(adjtile.getVal(), false);
+                    alltiles[i].setPoss(adjtile.getVal() - 1, false);
                 }
             }
         }
     }
-    public void s1(){
+    public void s1(boolean certainty){
         //If tile only has one possibility
         for(int i = 0; i < 81; i++){
             if (alltiles[i].getVal() != 0){
@@ -185,8 +185,8 @@ public class Sudoku{
 
             if (alltiles[i].getNumOfPoss() == 1){
                 for (int j = 0; j < 9; j++){
-                    if (alltiles[i].getPoss()[j]){
-                        alltiles[i].setVal(j+1, true);
+                    if (alltiles[i].getPoss(j)){
+                        alltiles[i].setVal(j+1, certainty);
                         this.updatePoss();
                         break;
                     }
@@ -194,14 +194,14 @@ public class Sudoku{
             }
         }
     }
-    public void s2(){
+    public void s2(boolean certainty){
         //Check if number is only possible in one position (in line)
         int[] rep = {0,0,0,0,0,0,0,0,0};
 
         for (int line = 0; line < 18; line++){
             for(tile t: alllines[line].getTiles()){
                 for(int i = 0; i < 9; i++){
-                    if (t.getPoss()[i]){
+                    if (t.getPoss(i)){
                         rep[i]++;
                     }
                 }
@@ -209,8 +209,8 @@ public class Sudoku{
             for(int i = 0; i < 9; i++){
                 if (rep[i] == 1){
                     for (int t = 0; t < 9; t++){
-                        if (alllines[line].getTiles()[t].getPoss()[i]){
-                            alllines[line].getTiles()[t].setVal(i+1, true);
+                        if (alllines[line].getTiles()[t].getPoss(i)){
+                            alllines[line].getTiles()[t].setVal(i+1, certainty);
                             this.updatePoss();
                             break;
                         }
@@ -223,13 +223,13 @@ public class Sudoku{
             }
         }
     }
-    public void s3(){
+    public void s3(boolean certainty){
         int[] rep = {0,0,0,0,0,0,0,0,0};
         //Check if number is only possible in one position (in square)
         for (int square = 0; square < 9; square++){
             for(tile t: allsquares[square].getTiles()){
                 for(int i = 0; i < 9; i++){
-                    if (t.getPoss()[i]){
+                    if (t.getPoss(i)){
                         rep[i]++;
                     }
                 }
@@ -237,8 +237,8 @@ public class Sudoku{
             for(int i = 0; i < 9; i++){
                 if (rep[i] == 1){
                     for (int t = 0; t < 9; t++){
-                        if (allsquares[square].getTiles()[t].getPoss()[i]){
-                            allsquares[square].getTiles()[t].setVal(i+1, true);
+                        if (allsquares[square].getTiles()[t].getPoss(i)){
+                            allsquares[square].getTiles()[t].setVal(i+1, certainty);
                             this.updatePoss();
                             break;
                         }
@@ -251,16 +251,125 @@ public class Sudoku{
             }
         }
     }
+    public void save(){
+        for (int i = 0; i < 81; i++){
+            //Error with saving lists as each other so must copy manually
+            for (int p = 0; p < 9; p++){
+                this.alltiles[i].setTempPoss(p, this.alltiles[i].getPoss(p));
+            }
+        }
+    }
+    public void reset(){
+        for (int i = 0; i < 81; i++){
+            //Restore previous possibilities
+            for (int p = 0; p < 9; p++){
+                this.alltiles[i].setPoss(p, this.alltiles[i].getTempPoss(p));
+            }
+            //If value was changed through uncertain guesses, reset values to unknown
+            if (!this.alltiles[i].certain){
+                this.alltiles[i].setVal(0);
+            }
+        }
+    }
     public void solver(){
-        this.s1();
-        this.s2();
-        this.s3();
+        String s = "";
+        while (! s.equals(this.longCompressed())){
+            s = this.longCompressed();
+            while((!this.solved()) && this.isValid()){
+                //Run solving algorithms with no guessing
+                oldComp = this.compress();
+                this.s1(true);
+                this.s2(true);
+                this.s3(true);
+    
+                if (oldComp.equals(this.compress())){
+                    //System.out.println("Not making progress... ");
+                    break;
+                }
+            }
+    
+            if (this.solved()){
+                System.out.println(this.toString());
+                System.out.println("Solved!!!");
+            }
+    
+            else if (!this.isValid()){
+                System.out.println("There is a mistake in the entries...\n\nEND OF PROGRAM");
+                break;
+            }
+    
+            else{
+                //Enter trial stage
+                System.out.println("Starting trial stage... ");
+                for (int i = 0; i < 81; i ++){
+                    if (this.alltiles[i].getVal() == 0){
+                        for (int p = 0; p < 9; p++){
+                            if (this.alltiles[i].getPoss(p)){
+                                System.out.println("Trying out value: "+(p+1)+" for tile: "+i);
+                                //Saving tempposs as current state of poss
+                                this.save();
+                                //A tile (i) has a possibility (p+1)
+                                //Try the value and see what happens
+                                this.alltiles[i].setVal((p+1), false);
+                                this.updatePoss();
+    
+                                while((!this.solved()) && this.isValid()){
+                                    //Run solving algorithms with no guessing
+                                    oldComp = this.compress();
+                                    this.s1(false);
+                                    this.s2(false);
+                                    this.s3(false);
+                        
+                                    if (oldComp.equals(this.compress())){
+                                        System.out.println("Not making progress (no info gained)...");
+                                        //Set value of poss to tempposs
+                                        this.reset();
+                                        break;
+                                    }
+                                }
+                        
+                                if (this.solved()){
+                                    System.out.println(this.toString());
+                                    System.out.println("Solved!!!");
+                                    break;
+                                }
+                        
+                                if (!this.isValid()){
+                                    //This guess results in a contradiction, therefore cannot be the answer
+                                    System.out.println("Eliminated 1 possibility...");
+                                    //Set value of poss to tempposs and add new information
+                                    this.reset();
+                                    this.alltiles[i].setPoss(p, false);
+                                }
+                            }
+                        }
+                    }
+                }
+            this.solver();
+            }
+        } 
     }
     public String compress(){
+        //tile id followed by value, seperated by commas
+        //Used to compare state of puzzle (NOT including possibilities)
         String s = "";
         for (tile t:this.alltiles){
             if (t.getVal() != 0){
                 s += "" + t.getId() + t.getVal() + ",";
+            }
+        }
+        return s;
+    }
+    public String longCompressed(){
+        //Every tile represented, either value or possibilities, seperated by a comma
+        //Used to compare state of puzzle (including possibilities)
+        String s = "";
+        for (tile t:this.alltiles){
+            if (t.getVal() != 0){
+                s += "" + t.getId() + t.getVal() + ",";
+            }
+            else{
+                s += t.allPossibilities();
             }
         }
         return s;
@@ -278,21 +387,16 @@ public class Sudoku{
         return s;
     }
     public static void main(String[] args){
-        //String setup =  "02,25,84,197,239,248,251,167,288,302,316,345,398,413,466,499,504,522,551,564,579,616,642,728,781,802"; //Evil puzzle unsolved
-        //String setup =  "37,78,99,115,164,223,241,252,303,337,373,384,399,415,422,436,478,502,551,562,588,646,698,711,734,777"; //Evil puzzle unsolved
-        String setup =  "25,36,43,71,84,155,173,192,211,256,285,314,351,362,373,401,435,447,451,498,523,554,595,617,639,652,725,737,766,773,781"; //Medium puzzle solved
+        String setup =  "02,25,84,197,239,248,251,167,288,302,316,345,398,413,466,499,504,522,551,564,579,616,642,728,781,802"; //Evil puzzle solved
+        //String setup =  "37,78,99,115,164,223,241,252,303,337,373,384,399,415,422,436,478,502,551,562,588,646,698,711,734,777"; //Evil puzzle solved!!
+        //String setup =  "25,36,43,71,84,155,173,192,211,256,285,314,351,362,373,401,435,447,451,498,523,554,595,617,639,652,725,737,766,773,781"; //Medium puzzle solved
                         
         Sudoku mySudoku = new Sudoku("Trial Sudoku", 2, setup);
 
         System.out.println(mySudoku.toString());
-        mySudoku.updatePoss();
+        mySudoku.updatePoss();        
 
-        int count = 0;
-        while((!mySudoku.solved()) && mySudoku.isValid() && count < 10){
-            mySudoku.solver();
-            System.out.println("Call count: " + count++);
-        }
-        System.out.println(mySudoku.toString());
+        mySudoku.solver();
 
     }
 }

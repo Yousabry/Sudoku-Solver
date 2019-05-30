@@ -22,6 +22,10 @@ public class tile{
         }
     }
 
+    public void setVal(int newval){
+        this.value = newval;
+    }
+
     public void setVal(int newval, boolean certainty){
         this.value = newval;
         this.certain = certainty;
@@ -39,15 +43,15 @@ public class tile{
     }
 
     public int getRow() {  //0-8
-        return row;
+        return this.row;
     }
 
     public int getcolumn(){ //0-8
-        return column;
+        return this.column;
     }
 
-    public boolean[] getPoss(){
-        return this.poss;
+    public boolean getPoss(int index){
+        return this.poss[index];
     }
 
     public int getNumOfPoss(){
@@ -58,19 +62,33 @@ public class tile{
         return counter;
     }
 
-    public boolean[] getTempPoss(){
-        return this.tempposs;
+    public boolean getTempPoss(int index){
+        return this.tempposs[index];
     }
 
-    public void setPoss(int val, boolean chance){
-        this.poss[val-1] = chance;
+    public void setPoss(int index, boolean chance){
+        this.poss[index] = chance;
+    }
+
+    public void setTempPoss(int index, boolean chance){
+        this.tempposs[index] = chance;
     }
 
     public String getPrettyPoss(){
         String s = "\nid: "+this.getId()+"   poss: ";
         for (int i = 0; i < 9; i++){
-            if((this.getPoss())[i]){
+            if(this.getPoss(i)){
                 s += (i+1)+", ";
+            }
+        }
+        return s;
+    }
+
+    public String allPossibilities(){
+        String s = "";
+        for (int i = 0; i < 9; i++){
+            if(this.getPoss(i)){
+                s += (i+1)+",";
             }
         }
         return s;
