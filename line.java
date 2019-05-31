@@ -1,14 +1,9 @@
 public class line{
     int id;
-    int counter = 0;
     tile[] tiles = new tile[9];
 
     public line(int id){
         this.id = id;
-    }
-
-    public void addtile(tile mytile){
-        tiles[counter ++] = mytile;
     }
 
     public int getId(){
@@ -16,7 +11,11 @@ public class line{
     }
 
     public tile[] getTiles(){
-        return tiles;
+        return this.tiles;
+    }
+
+    public void addtile(tile mytile, int location){
+        tiles[location] = mytile;
     }
 
     public String toString(){

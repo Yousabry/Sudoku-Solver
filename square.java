@@ -1,23 +1,21 @@
 public class square{
     int id;
-    int counter = 0;
     tile[] tiles = new tile[9];
 
     public square(int id){
         this.id = id;
     }
 
-    public tile[] getTiles(){
-        return this.tiles;
-    }
-
     public int getId(){
         return this.id;
     }
 
-    public void addtile(tile mytile){
-        tiles[counter] = mytile;
-        counter ++;
+    public tile[] getTiles(){
+        return this.tiles;
+    }
+
+    public void addtile(tile mytile, int location){
+        tiles[location] = mytile;
     }
 
     public String toString(){

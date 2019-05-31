@@ -32,7 +32,7 @@ public class Sudoku{
             myline = new line(counter);
 
             for (int j = 0; j < 9; j ++){
-                myline.addtile(alltiles[(i*9)+j]);
+                myline.addtile(alltiles[(i*9)+j],j);
             }
 
             alllines[counter] = myline;
@@ -44,7 +44,7 @@ public class Sudoku{
             myline = new line(counter);
 
             for (int j = 0; j < 9; j ++){
-                myline.addtile(alltiles[(j*9)+i]);
+                myline.addtile(alltiles[(j*9)+i],j);
             }
 
             alllines[counter ++] = myline;
@@ -57,15 +57,15 @@ public class Sudoku{
 
         for (int rowsection = 0; rowsection < 3; rowsection++){
             for (int colsection = 0; colsection < 3; colsection++){
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection)]);
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 1]);
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 2]);
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 9]);
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 10]);
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 11]);
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 18]);
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 19]);
-                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 20]);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection)], 0);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 1], 1);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 2], 2);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 9], 3);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 10], 4);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 11], 5);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 18], 6);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 19], 7);
+                allsquares[(rowsection*3) + colsection].addtile(alltiles[(27*rowsection)+(3*colsection) + 20], 8);
             }
         }
 
@@ -87,7 +87,7 @@ public class Sudoku{
     }
     public boolean isValid(){
         int[] tempchecker = {0,0,0,0,0,0,0,0,0};
-        //Check lines
+        //Check lines for repeated value
         for (line l: alllines){
             for (tile t: l.getTiles()){
                 if(t.getVal() != 0){
@@ -104,7 +104,7 @@ public class Sudoku{
             }
         }
 
-        //Check Squares
+        //Check Squares for repeated value
         for (square s: allsquares){
             for (tile t: s.getTiles()){
                 if(t.getVal() != 0){
@@ -290,7 +290,8 @@ public class Sudoku{
     
             if (this.solved()){
                 System.out.println(this.toString());
-                System.out.println("Solved!!!");
+                //System.out.println("Solved!!!");
+                break;
             }
     
             else if (!this.isValid()){
@@ -305,7 +306,7 @@ public class Sudoku{
                     if (this.alltiles[i].getVal() == 0){
                         for (int p = 0; p < 9; p++){
                             if (this.alltiles[i].getPoss(p)){
-                                System.out.println("Trying out value: "+(p+1)+" for tile: "+i);
+                                //System.out.println("Trying out value: "+(p+1)+" for tile: "+i);
                                 //Saving tempposs as current state of poss
                                 this.save();
                                 //A tile (i) has a possibility (p+1)
@@ -321,7 +322,7 @@ public class Sudoku{
                                     this.s3(false);
                         
                                     if (oldComp.equals(this.compress())){
-                                        System.out.println("Not making progress (no info gained)...");
+                                        //System.out.println("Not making progress (no info gained)...");
                                         //Set value of poss to tempposs
                                         this.reset();
                                         break;
@@ -329,14 +330,13 @@ public class Sudoku{
                                 }
                         
                                 if (this.solved()){
-                                    System.out.println(this.toString());
-                                    System.out.println("Solved!!!");
+                                    //System.out.println("Solved!!!");
                                     break;
                                 }
                         
                                 if (!this.isValid()){
                                     //This guess results in a contradiction, therefore cannot be the answer
-                                    System.out.println("Eliminated 1 possibility...");
+                                    //System.out.println("Eliminated 1 possibility...");
                                     //Set value of poss to tempposs and add new information
                                     this.reset();
                                     this.alltiles[i].setPoss(p, false);
@@ -345,7 +345,9 @@ public class Sudoku{
                         }
                     }
                 }
-            this.solver();
+                if (! this.solved()){
+                    this.solver();
+                }
             }
         } 
     }
@@ -377,9 +379,9 @@ public class Sudoku{
     public String toString(){
         String s = "-------------------------\n";
         for (int i = 0; i < 9 ; i++){
-            s += "| " + this.alltiles[(i*9) + 0] + " " + this.alltiles[(i*9) + 1] + " " + this.alltiles[(i*9) + 2];
-            s += " | " + this.alltiles[(i*9) + 3] + " " + this.alltiles[(i*9) + 4] + " " + this.alltiles[(i*9) + 5];
-            s += " | " + this.alltiles[(i*9) + 6] + " " + this.alltiles[(i*9) + 7] + " " + this.alltiles[(i*9) + 8] + " |\n";
+            s += "| " + this.getTile((i*9) + 0) + " " + this.getTile((i*9) + 1) + " " + this.getTile((i*9) + 2);
+            s += " | " + this.getTile((i*9) + 3) + " " + this.getTile((i*9) + 4) + " " + this.getTile((i*9) + 5);
+            s += " | " + this.getTile((i*9) + 6) + " " + this.getTile((i*9) + 7) + " " + this.getTile((i*9) + 8) + " |\n";
             if ((i+1) % 3 == 0){
                 s += "-------------------------\n";
             }
@@ -387,9 +389,10 @@ public class Sudoku{
         return s;
     }
     public static void main(String[] args){
-        String setup =  "02,25,84,197,239,248,251,167,288,302,316,345,398,413,466,499,504,522,551,564,579,616,642,728,781,802"; //Evil puzzle solved
-        //String setup =  "37,78,99,115,164,223,241,252,303,337,373,384,399,415,422,436,478,502,551,562,588,646,698,711,734,777"; //Evil puzzle solved!!
         //String setup =  "25,36,43,71,84,155,173,192,211,256,285,314,351,362,373,401,435,447,451,498,523,554,595,617,639,652,725,737,766,773,781"; //Medium puzzle solved
+        String setup =  "26,34,57,65,139,232,258,269,271,312,333,354,365,401,446,452,477,494,538,546,551,579,676,742,753,775,787"; //Hard puzzle solved
+        //String setup =  "02,25,84,197,239,248,251,167,288,302,316,345,398,413,466,499,504,522,551,564,579,616,642,728,781,802"; //Evil puzzle solved
+        //String setup =  "37,78,99,115,164,223,241,252,303,337,373,384,399,415,422,436,478,502,551,562,588,646,698,711,734,777"; //Evil puzzle solved
                         
         Sudoku mySudoku = new Sudoku("Trial Sudoku", 2, setup);
 
